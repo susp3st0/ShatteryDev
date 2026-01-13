@@ -23,7 +23,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
+    await bot.tree.sync(guild=discord.Object(id=1457996708293120086))
     requests.post(
         os.getenv("WEBHOOK_URL"),
         json={"content": "# bot online! <@&1458303852712562984>"}
@@ -134,6 +134,11 @@ async def timeout(interaction: discord.Interaction, member: discord.Member, dura
     await member.timeout(duration=duration, reason=reason)
     await interaction.response.send_message(f"timed out **{member.mention}** for **{duration}**because **{reason}**")
 
+@timeout.error
+async def timeout_error(interaction: discord.Interaction, error):
+    if isinstance(error, (app_commands.MissingRole, app_commands.MissingAnyRole)):
+        await interaction.response.send_message("You dont have permission", ephemeral=True)
+
 @bot.tree.command(name="shutdown", description="Shutdown the bot safely")
 @app_commands.check(lambda i: i.user.id == 1113996666534641726)
 async def shutdown(interaction: discord.Interaction):
@@ -156,14 +161,3 @@ requests.post(
     os.getenv("WEBHOOK_URL"),
     json={"content": "# bot offline"}
 )
-
-
-
-
-
-
-
-
-
-
-
