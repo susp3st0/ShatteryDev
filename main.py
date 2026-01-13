@@ -8,6 +8,7 @@ import random
 import requests
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 START_TIME = time.time()
 
@@ -21,9 +22,15 @@ intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+DEV_GUILD_ID = 1457996708293120086
+
 @bot.event
 async def on_ready():
-    await bot.tree.sync(guild=discord.Object(id=1457996708293120086))
+    guild = discord.Object(id=DEV_GUILD_ID)
+    bot.tree.copy_global_to(guild=guild)
+    await bot.tree.sync(guild=guild)
+    bot.tree.clear_commands(guild=None)
+    await bot.tree.sync(guild=None)
     requests.post(
         os.getenv("WEBHOOK_URL"),
         json={"content": "# bot online! <@&1458303852712562984>"}
@@ -111,7 +118,6 @@ async def ball(interaction: discord.Interaction, question: str):
 async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = None):
     await member.kick(reason=reason)
     await interaction.response.send_message(f"kicked {member.mention}")
-
 @kick.error
 async def kick_error(interaction: discord.Interaction, error):
     if isinstance(error, (app_commands.MissingRole, app_commands.MissingAnyRole)):
@@ -122,22 +128,44 @@ async def kick_error(interaction: discord.Interaction, error):
 async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = None):
     await member.ban(reason=reason)
     await interaction.response.send_message(f"banned {member.mention}")
-
 @ban.error
 async def ban_error(interaction: discord.Interaction, error):
     if isinstance(error, (app_commands.MissingRole, app_commands.MissingAnyRole)):
         await interaction.response.send_message("You dont have permission", ephemeral=True)
 
 @bot.tree.command(name="timeout", description="timeout a user")
-@app_commands.default_permissions(administrator=True)
-async def timeout(interaction: discord.Interaction, member: discord.Member, duration: str, reason: str = None):
-    await member.timeout(duration=duration, reason=reason)
-    await interaction.response.send_message(f"timed out **{member.mention}** for **{duration}**because **{reason}**")
+@app_commands.checks.has_permissions(moderate_members=True)
+@app_commands.choices(
+    duration=[
+        app_commands.Choice(name="1 Minute", value=60),
+        app_commands.Choice(name="5 Minutes", value=300),
+        app_commands.Choice(name="10 Minutes", value=600),
+        app_commands.Choice(name="1 Hour", value=3600),
+        app_commands.Choice(name="1 Day", value=86400),
+        app_commands.Choice(name="1 Week", value=604800),
+    ]
+)
+async def timeout(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    duration: app_commands.Choice[int],
+    reason: str | None = None
+):
+    until = discord.utils.utcnow() + timedelta(seconds=duration.value)
 
+    await member.timeout(until, reason=reason)
+
+    await interaction.response.send_message(
+        f"**{member.mention}** timed out for **{duration.name}**\n"
+        f"reason: **{reason or 'no reason'}**"
+    )
 @timeout.error
 async def timeout_error(interaction: discord.Interaction, error):
-    if isinstance(error, (app_commands.MissingRole, app_commands.MissingAnyRole)):
-        await interaction.response.send_message("You dont have permission", ephemeral=True)
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "No permission",
+            ephemeral=True
+        )
 
 @bot.tree.command(name="shutdown", description="Shutdown the bot safely")
 @app_commands.check(lambda i: i.user.id == 1113996666534641726)
@@ -146,7 +174,7 @@ async def shutdown(interaction: discord.Interaction):
     
     requests.post(
     os.getenv("WEBHOOK_URL"),
-    json={"content": "# shutting down due creator's request"}
+    json={"content": "# dev bot shutting down due creator's request"}
 )
     
     # Close the bot gracefully
@@ -159,5 +187,5 @@ bot.run(TOKEN)
 
 requests.post(
     os.getenv("WEBHOOK_URL"),
-    json={"content": "# bot offline"}
+    json={"content": "# dev bot offline"}
 )
