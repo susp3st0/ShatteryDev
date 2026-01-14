@@ -4,6 +4,6 @@ this is development version, maybe there bug inside
 # feature
 - kick/ban feature
 - meme
-- chatbot (this dumb)
 - ...more
+
 
