@@ -1,4 +1,4 @@
-version = "alpha v2.0.0"
+version = "dev v2.2.3"
 ##################
 import time
 import discord
