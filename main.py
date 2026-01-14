@@ -34,7 +34,7 @@ async def on_ready():
     await bot.tree.sync(guild=None)
     requests.post(
         os.getenv("WEBHOOK_URL"),
-        json={"content": "# bot online! <@&1458303852712562984>"}
+        json={"content": "# dev bot online! <@&1458303852712562984>"}
     )
 
 @bot.tree.command(name="ping", description="check bot status & latency")
@@ -72,7 +72,6 @@ async def ping(interaction: discord.Interaction):
     embed.add_field(name="uptime", value=f"{hours}h {minutes}m", inline=True)
     embed.add_field(name="status", value=f"{status}")
     await interaction.response.send_message(embed=embed)
-
 
 @bot.tree.command(name="dice", description="random number 1–6")
 async def randnum(interaction: discord.Interaction):
