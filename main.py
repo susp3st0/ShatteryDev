@@ -218,7 +218,7 @@ async def timeout(
     interaction: discord.Interaction,
     member: discord.Member,
     duration: app_commands.Choice[int],
-    reason: str | None = None
+    reason: str = None
 ):
     until = discord.utils.utcnow() + timedelta(seconds=duration.value)
 
