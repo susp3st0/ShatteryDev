@@ -10,6 +10,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 import base64
+from PIL import Image, ImageDraw
 
 START_TIME = time.time()
 
@@ -125,6 +126,56 @@ async def about(interaction: discord.Interaction):
 @bot.tree.command(name="say", description="say smth")
 async def say(interaction: discord.Interaction, message: str):
     await interaction.response.send_message(message)
+
+@bot.tree.command(name="randomdraw", description="random draw")
+async def randomdraw(interaction: discord.Interaction, randomrange: int):
+    img = Image.new("RGB", (400, 300), "white")
+    draw = ImageDraw.Draw(img)
+    for _ in range(randomrange):
+        x1 = random.randint(0, 350)
+        y1 = random.randint(0, 250)
+        x2 = x1 + random.randint(10, 50)
+        y2 = y1 + random.randint(10, 50)
+
+        color = (
+            random.randint(0,255),
+            random.randint(0,255),
+            random.randint(0,255)
+        )
+
+        draw.rectangle([x1, y1, x2, y2], fill=color)
+
+    for _ in range(randomrange):
+        x1 = random.randint(0, 350)
+        y1 = random.randint(0, 250)
+        x2 = x1 + random.randint(10, 50)
+        y2 = y1 + random.randint(10, 50)
+
+        color = (
+            random.randint(0,255),
+            random.randint(0,255),
+            random.randint(0,255)
+        )
+
+        draw.ellipse([x1, y1, x2, y2], fill=color)
+
+    for _ in range(randomrange):
+        x1 = random.randint(0, 350)
+        y1 = random.randint(0, 250)
+        x2 = x1 + random.randint(10, 50)
+        y2 = y1 + random.randint(10, 50)
+
+        color = (
+            random.randint(0,255),
+            random.randint(0,255),
+            random.randint(0,255)
+        )
+
+        draw.line([x1, y1, x2, y2], fill=color)
+
+    img.save("random.png")
+    await interaction.response.send_message("result:",file=discord.File("random.png"))
+
 
 @bot.tree.command(name="8ball",description="similer to /choose, but this thing is yes/no")
 async def ball(interaction: discord.Interaction, question: str):
