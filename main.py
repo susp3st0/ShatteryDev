@@ -9,6 +9,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+import base64
 
 START_TIME = time.time()
 
@@ -82,6 +83,24 @@ async def randnum(interaction: discord.Interaction):
 async def choose(interaction: discord.Interaction, choice1: str, choice2: str):
     result = random.choice([choice1, choice2])
     await interaction.response.send_message(f"between {choice1} and {choice2}, i choose {result}!")
+
+@bot.tree.command(name="b64encode", description="text to base64")
+async def b64(interaction: discord.Interaction, text: str):
+    try:
+        result = base64.b64encode(text.encode()).decode()
+        await interaction.response.send_message(f"user input: ```{text}```\nresult: ```{result}```", ephemeral=True)
+
+    except:
+        await interaction.response.send_message("invalid base64", ephemeral=True)
+
+@bot.tree.command(name="b64decode", description="base64 to text")
+async def b64(interaction: discord.Interaction, text: str):
+    try:
+        result = base64.b64decode(text.encode()).decode()
+        await interaction.response.send_message(f"user input: ```{text}```\nresult: ```{result}```", ephemeral=True)
+
+    except:
+        await interaction.response.send_message("invalid base64", ephemeral=True)
 
 @bot.tree.command(name="meme", description="send a random meme")
 async def meme(interaction: discord.Interaction):
