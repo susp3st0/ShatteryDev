@@ -10,7 +10,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 import base64
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageGrab
 
 START_TIME = time.time()
 
@@ -79,6 +79,12 @@ async def randnum(interaction: discord.Interaction):
     num = random.randint(1,6)
     await interaction.response.send_message(f"**{num}**")
 
+@bot.tree.command(name="capture", description="capture the server screen? how")
+async def capture(interaction: discord.Interaction):
+    img = ImageGrab.grab()
+    img.save("capture.png")
+    await interaction.response.send_message(file=discord.File("capture.png"))
+    
 @bot.tree.command(name="choose",description="choose smth")
 async def choose(interaction: discord.Interaction, choice1: str, choice2: str):
     result = random.choice([choice1, choice2])
