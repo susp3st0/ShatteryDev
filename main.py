@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import base64
 from PIL import Image, ImageDraw, ImageGrab
+from typing import Optional
+import aiohttp
 
 START_TIME = time.time()
 
@@ -187,6 +189,28 @@ async def ball(interaction: discord.Interaction, question: str):
     answer = random.choice(["yes","no","maybe","i dont know","ok","later"])
     await interaction.response.send_message(f"**question**: {question}\n**response**: {answer}")
 
+@bot.tree.command(name="randomwaifu", description="random waifu from waifu.im")
+async def waifu(interaction: discord.Interaction, tags: Optional[str] = None):
+    # 1. Tell Discord to wait so the command doesn't time out
+    await interaction.response.defer()
+    blocked_tags = ["oral","ass","hentai","milf","oral","paizuri","ecchi"]
+    if tags and tags.lower() in blocked_tags:
+        return await interaction.response.send_message("that tag is not allowed!", ephemeral=True)
+
+    url = "https://api.waifu.im/search"
+    params = {"included_tags": tags} if tags else {}
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params) as r:
+            data = await r.json()
+
+    # 2. Check if we actually got an image back before trying to send it
+    if "images" in data:
+        image_url = data['images'][0]['url']
+        await interaction.followup.send(image_url)
+    else:
+        await interaction.followup.send("no tags found, here a list:\nwaifu\nmaid\nmarin-kitagawa\nmori-calliope\nraiden-shogun\noppai\nselfies\nuniform\nkamisato-ayaka")
+
 @bot.tree.command(name="kick", description="kick a user")
 @app_commands.default_permissions(administrator=True)
 async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = None):
@@ -233,6 +257,7 @@ async def timeout(
         f"**{member.mention}** timed out for **{duration.name}**\n"
         f"reason: **{reason or 'no reason'}**"
     )
+
 @timeout.error
 async def timeout_error(interaction: discord.Interaction, error):
     if isinstance(error, app_commands.MissingPermissions):
